@@ -1,0 +1,873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SCI Global Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:          #f0f2f5;
+  --surface:     #ffffff;
+  --surface2:    #f7f8fa;
+  --surface3:    #eef0f4;
+  --border:      #dde1e8;
+  --border2:     #c8cdd8;
+  --text:        #1a2332;
+  --text2:       #3a4a5c;
+  --text3:       #6b7a8d;
+  --text4:       #9aa5b4;
+  --blue:        #1a56db;
+  --blue-soft:   #e8effe;
+  --blue-mid:    #3b7fe8;
+  --blue-dark:   #0f3a8a;
+  --green:       #0c7240;
+  --green-soft:  #d1fae5;
+  --green-mid:   #059669;
+  --amber:       #92570a;
+  --amber-soft:  #fef3c7;
+  --amber-mid:   #d97706;
+  --red:         #b91c1c;
+  --red-soft:    #fee2e2;
+  --red-mid:     #ef4444;
+  --purple:      #5b21b6;
+  --purple-soft: #ede9fe;
+  --font: 'DM Sans', sans-serif;
+  --mono: 'DM Mono', monospace;
+  --serif: 'Playfair Display', serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* TOPBAR */
+.topbar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 24px; height: 52px; display: flex; align-items: center;
+  justify-content: space-between; position: sticky; top: 0; z-index: 200;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+}
+.topbar-left { display: flex; align-items: center; gap: 16px; }
+.logo { font-family: var(--serif); font-size: 19px; color: var(--text); }
+.logo span { color: var(--blue); }
+.divider-v { width: 1px; height: 22px; background: var(--border); }
+.report-title { font-size: 13px; color: var(--text3); font-weight: 500; }
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+.badge { padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; letter-spacing: 0.04em; }
+.badge-blue { background: var(--blue-soft); border: 1px solid rgba(26,86,219,0.2); color: var(--blue); }
+.badge-amber { background: var(--amber-soft); border: 1px solid rgba(217,119,6,0.25); color: var(--amber); }
+.refresh { font-size: 11px; color: var(--text4); font-family: var(--mono); }
+
+/* NAV TABS */
+.nav-tabs {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 0 24px; display: flex; position: sticky; top: 52px; z-index: 190;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.nav-tab {
+  padding: 11px 18px; font-size: 12.5px; font-weight: 500; color: var(--text3);
+  cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s;
+  white-space: nowrap; display: flex; align-items: center; gap: 7px; user-select: none;
+}
+.nav-tab:hover { color: var(--text2); background: var(--surface2); }
+.nav-tab.active { color: var(--blue); border-bottom-color: var(--blue); font-weight: 600; }
+.tab-num {
+  font-family: var(--mono); font-size: 10px; background: var(--surface3);
+  border-radius: 4px; padding: 1px 5px; color: var(--text4);
+}
+.nav-tab.active .tab-num { background: var(--blue-soft); color: var(--blue); }
+
+/* FILTER BAR */
+.filter-bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 8px 24px; display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; position: sticky; top: 96px; z-index: 180;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.filter-label { font-size: 10.5px; color: var(--text4); font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; flex-shrink: 0; }
+.fc {
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 6px;
+  padding: 5px 10px; font-size: 12px; color: var(--text2); cursor: pointer;
+  display: flex; align-items: center; gap: 5px; transition: all 0.15s;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05); user-select: none; flex-shrink: 0;
+}
+.fc:hover { border-color: var(--blue-mid); background: var(--blue-soft); }
+.fc.active-fc { border-color: var(--blue); background: var(--blue-soft); }
+.fc-lbl { color: var(--text3); }
+.fc-val { color: var(--blue); font-weight: 600; }
+.fc svg { width: 10px; height: 10px; color: var(--text4); transition: transform 0.18s; flex-shrink: 0; }
+.fc.open svg { transform: rotate(180deg); }
+.fsep { width: 1px; height: 20px; background: var(--border); flex-shrink: 0; }
+.fstatus {
+  background: var(--blue-soft); border: 1px solid rgba(26,86,219,0.18);
+  border-radius: 20px; padding: 3px 10px; font-size: 11px; color: var(--blue); font-weight: 500;
+}
+
+/* MEASURE DROPDOWN */
+.mwrap { position: relative; flex-shrink: 0; }
+.mdrop {
+  display: none; position: absolute; top: calc(100% + 6px); left: 0;
+  background: var(--surface); border: 1px solid var(--border2); border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.12); width: 288px; z-index: 9999; overflow: hidden;
+}
+.mdrop.open { display: block; }
+.mdrop-head {
+  padding: 10px 12px 8px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mdrop-title { font-size: 11px; font-weight: 700; color: var(--text3); letter-spacing: 0.05em; text-transform: uppercase; }
+.mdrop-actions { display: flex; gap: 12px; }
+.mact { font-size: 11px; color: var(--blue); cursor: pointer; font-weight: 600; background: none; border: none; padding: 0; font-family: var(--font); }
+.mact:hover { text-decoration: underline; }
+.msearch { padding: 8px 10px; border-bottom: 1px solid var(--border); }
+.msearch input {
+  width: 100%; border: 1px solid var(--border); border-radius: 5px; padding: 6px 9px;
+  font-size: 12px; font-family: var(--font); color: var(--text); background: var(--surface2); outline: none;
+}
+.msearch input:focus { border-color: var(--blue-mid); }
+.mlist { max-height: 230px; overflow-y: auto; padding: 4px 0; }
+.mitem {
+  display: flex; align-items: center; gap: 9px; padding: 7px 12px;
+  cursor: pointer; transition: background 0.1s;
+}
+.mitem:hover { background: var(--surface2); }
+.mitem input[type=checkbox] { accent-color: var(--blue); width: 14px; height: 14px; cursor: pointer; flex-shrink: 0; }
+.mcode { font-family: var(--mono); font-size: 10px; color: var(--text4); min-width: 30px; flex-shrink: 0; }
+.mname { font-size: 12.5px; color: var(--text2); flex: 1; }
+.mstream { font-size: 10px; padding: 1px 6px; border-radius: 10px; font-weight: 600; flex-shrink: 0; }
+.s-sec { background: var(--blue-soft); color: var(--blue); }
+.s-ops { background: var(--purple-soft); color: var(--purple); }
+.s-hr  { background: var(--amber-soft); color: var(--amber); }
+.mfoot {
+  padding: 8px 12px; border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.mcount { font-size: 11px; color: var(--text3); }
+.mapply {
+  background: var(--blue); color: #fff; border: none; border-radius: 5px;
+  padding: 5px 14px; font-size: 12px; font-weight: 600; font-family: var(--font);
+  cursor: pointer; transition: background 0.15s;
+}
+.mapply:hover { background: var(--blue-dark); }
+
+/* MAIN */
+.main { flex: 1; padding: 20px 24px 40px; }
+
+/* PAGES */
+.page { display: none; animation: fadeUp 0.22s ease; }
+.page.active { display: block; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(7px); } to { opacity:1; transform:translateY(0); } }
+
+/* GRID */
+.grid { display: grid; gap: 14px; }
+.g4 { grid-template-columns: repeat(4,1fr); }
+.g3 { grid-template-columns: repeat(3,1fr); }
+.g2 { grid-template-columns: repeat(2,1fr); }
+.g21 { grid-template-columns: 2fr 1fr; }
+.g32 { grid-template-columns: 3fr 2fr; }
+.sp2 { grid-column: span 2; }
+.sp3 { grid-column: span 3; }
+
+/* CARD */
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 10px;
+  padding: 18px; position: relative; overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.card-accent { position: absolute; top: 0; left: 0; right: 0; height: 3px; border-radius: 10px 10px 0 0; }
+.ctitle {
+  font-size: 10.5px; font-weight: 700; color: var(--text3); text-transform: uppercase;
+  letter-spacing: 0.07em; margin-bottom: 12px; display: flex; align-items: center;
+  justify-content: space-between; gap: 6px;
+}
+.ctitle span { color: var(--text4); font-weight: 400; text-transform: none; letter-spacing: 0; font-size: 11px; }
+
+/* KPI */
+.kval { font-family: var(--serif); font-size: 42px; color: var(--text); line-height: 1; margin-bottom: 5px; }
+.kval.lg { font-size: 44px; }
+.ksub { font-size: 11.5px; color: var(--text3); margin-bottom: 10px; }
+.kdelta { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 20px; }
+.kup   { background: var(--green-soft); color: var(--green); }
+.kdown { background: var(--red-soft);   color: var(--red); }
+.kflat { background: var(--surface3);   color: var(--text3); }
+
+/* SPARKLINE */
+.spark { margin-top: 12px; }
+
+/* BARS */
+.barchart { display: flex; flex-direction: column; gap: 9px; }
+.brow { display: flex; align-items: center; gap: 10px; }
+.blabel { font-size: 11.5px; color: var(--text2); width: 120px; flex-shrink: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.btrack { flex: 1; height: 8px; background: var(--surface3); border-radius: 4px; overflow: hidden; position: relative; }
+.bfill { height: 100%; border-radius: 4px; transition: width 0.8s cubic-bezier(0.4,0,0.2,1); }
+.bfill.g { background: linear-gradient(90deg,#059669,#10b981); }
+.bfill.a { background: linear-gradient(90deg,#d97706,#f59e0b); }
+.bfill.r { background: linear-gradient(90deg,#dc2626,#ef4444); }
+.bval { font-size: 11.5px; font-family: var(--mono); color: var(--text3); width: 46px; text-align: right; flex-shrink: 0; }
+.tline { position: absolute; top: 0; bottom: 0; width: 2px; background: rgba(26,86,219,0.3); border-radius: 1px; }
+
+/* DONUT */
+.dnut-wrap { display: flex; align-items: center; gap: 18px; margin-top: 14px; }
+.dnut-leg { display: flex; flex-direction: column; gap: 8px; }
+.leg-row { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text2); }
+.leg-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+
+/* HEATMAP */
+.hmwrap { overflow-x: auto; }
+.hm { border-collapse: collapse; width: 100%; font-size: 11px; }
+.hm th {
+  padding: 6px 8px; color: var(--text3); font-weight: 700; text-align: center;
+  font-size: 10px; letter-spacing: 0.04em; white-space: nowrap; text-transform: uppercase;
+  border-bottom: 1px solid var(--border); background: var(--surface2);
+}
+.hm th.mc { text-align: left; width: 170px; }
+.hm td { padding: 5px 6px; text-align: center; }
+.hmc {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 54px; height: 26px; border-radius: 5px; font-family: var(--mono);
+  font-size: 11px; font-weight: 600;
+}
+.hmc.g4 { background:#d1fae5; color:#064e3b; }
+.hmc.g3 { background:#a7f3d0; color:#065f46; }
+.hmc.g2 { background:#6ee7b7; color:#064e3b; }
+.hmc.g1 { background:#34d399; color:#064e3b; }
+.hmc.a1 { background:#fef3c7; color:#78350f; }
+.hmc.a2 { background:#fde68a; color:#78350f; }
+.hmc.r1 { background:#fee2e2; color:#7f1d1d; }
+.hmc.r2 { background:#fca5a5; color:#7f1d1d; }
+.hmeas { font-size: 12px; color: var(--text); font-weight: 500; padding: 5px 0; text-align: left; }
+.hmrow:hover td { background: var(--surface2); }
+
+/* TABLES */
+.rtable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.rtable th {
+  padding: 7px 10px; text-align: left; font-size: 10px; font-weight: 700;
+  color: var(--text4); text-transform: uppercase; letter-spacing: 0.06em;
+  border-bottom: 1px solid var(--border); background: var(--surface2); white-space: nowrap;
+}
+.rtable td { padding: 8px 10px; border-bottom: 1px solid var(--bg); }
+.rtable tr:last-child td { border-bottom: none; }
+.rtable tr:hover td { background: var(--surface2); }
+.rnum { font-family: var(--mono); font-size: 11px; color: var(--text4); }
+.gpill { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); font-size: 11px; font-weight: 600; }
+.gpill.r { background: var(--red-soft); color: var(--red); }
+.gpill.a { background: var(--amber-soft); color: var(--amber); }
+.gpill.g { background: var(--green-soft); color: var(--green); }
+
+.mktable { width: 100%; border-collapse: collapse; font-size: 12px; }
+.mktable th {
+  padding: 8px 10px; text-align: left; font-size: 10px; font-weight: 700;
+  color: var(--text4); letter-spacing: 0.06em; text-transform: uppercase;
+  border-bottom: 2px solid var(--border); background: var(--surface2); white-space: nowrap;
+}
+.mktable td { padding: 9px 10px; border-bottom: 1px solid var(--bg); color: var(--text2); }
+.mktable tr:last-child td { border-bottom: none; }
+.mktable tr:hover td { background: var(--surface2); }
+.sdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; }
+.sdot.g { background: var(--green-mid); }
+.sdot.a { background: var(--amber-mid); }
+.sdot.r { background: var(--red-mid); }
+
+/* PAGE NOTE */
+.pnote {
+  background: var(--blue-soft); border: 1px solid rgba(26,86,219,0.15);
+  border-radius: 8px; padding: 10px 14px; font-size: 11.5px; color: var(--text2);
+  margin-bottom: 16px; display: flex; align-items: center; gap: 10px;
+}
+.pnote strong { color: var(--blue); }
+
+/* ANNOTATION */
+.ann {
+  background: var(--amber-soft); border: 1px solid rgba(217,119,6,0.2);
+  border-radius: 6px; padding: 9px 13px; font-size: 11px; color: var(--text2);
+  display: flex; align-items: flex-start; gap: 8px; margin-top: 14px;
+}
+
+/* METRIC ITEMS */
+.mrow { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.mitem {
+  display: flex; flex-direction: column; align-items: center; padding: 8px 14px;
+  background: var(--surface2); border-radius: 8px; border: 1px solid var(--border);
+}
+.mitem .mv { font-family: var(--serif); font-size: 22px; color: var(--text); }
+.mitem .ml { font-size: 10px; color: var(--text4); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 2px; }
+
+/* CHART SVG */
+.csvg { width: 100%; overflow: visible; }
+
+/* STAT BOXES */
+.statbox { border-radius: 8px; padding: 12px; }
+.statbox .stitle { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 4px; }
+.statbox .sval { font-family: var(--serif); font-size: 26px; }
+.statbox .ssub { font-size: 11px; color: var(--text3); margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="logo">SCI<span>.</span></div>
+    <div class="divider-v"></div>
+    <div class="report-title">Global SCI Dashboard</div>
+  </div>
+  <div class="topbar-right">
+    <span class="badge badge-amber">● STAKEHOLDER MOCKUP</span>
+    <span class="badge badge-blue">GROUP LEADERSHIP</span>
+    <span class="refresh">Snapshot: Feb 2026</span>
+  </div>
+</div>
+
+<!-- PAGE TABS -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="showPage(0)"><span class="tab-num">P1</span> Overview</div>
+  <div class="nav-tab" onclick="showPage(1)"><span class="tab-num">P2</span> Market Comparison</div>
+  <div class="nav-tab" onclick="showPage(2)"><span class="tab-num">P3</span> Measure Heatmap</div>
+  <div class="nav-tab" onclick="showPage(3)"><span class="tab-num">P4</span> 12M Trend</div>
+  <div class="nav-tab" onclick="showPage(4)"><span class="tab-num">P5</span> Gap Analysis</div>
+</div>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">Filters</span>
+
+  <div class="fc"><span class="fc-lbl">Zone</span><span class="fc-val">All</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="fc"><span class="fc-lbl">BU</span><span class="fc-val">All</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+  <div class="fc"><span class="fc-lbl">Accountability</span><span class="fc-val">All</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+
+  <!-- MEASURE MULTI-SELECT -->
+  <div class="mwrap" id="mwrap">
+    <div class="fc" id="mchip" onclick="toggleDrop(event)">
+      <span class="fc-lbl">Measure</span>
+      <span class="fc-val" id="mchip-lbl">All (22)</span>
+      <svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div class="mdrop" id="mdrop">
+      <div class="mdrop-head">
+        <span class="mdrop-title">Select Measures</span>
+        <div class="mdrop-actions">
+          <button class="mact" onclick="selAll()">All</button>
+          <button class="mact" onclick="selNone()">None</button>
+        </div>
+      </div>
+      <div class="msearch"><input type="text" id="msrch" placeholder="Search by name, code or stream…" oninput="renderList(this.value)"></div>
+      <div class="mlist" id="mlist"></div>
+      <div class="mfoot">
+        <span class="mcount" id="mcnt">22 of 22 selected</span>
+        <button class="mapply" onclick="applyFilter()">Apply</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="fc"><span class="fc-lbl">Period</span><span class="fc-val">Feb 2026</span><svg viewBox="0 0 10 6" fill="none"><path d="M1 1l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg></div>
+
+  <div class="fsep"></div>
+  <span class="fstatus" id="fstatus">All markets &middot; All measures</span>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+
+<!-- ══ P1: OVERVIEW ══ -->
+<div class="page active" id="page-0">
+  <div class="pnote"><span>📋</span><div><strong>P1 — Overview</strong> &nbsp;Top-level SCI scorecard. Group composite index, market coverage, measures achieving target, MoM and YoY deltas. Executive entry point.</div></div>
+
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="card">
+      <div class="card-accent" style="background:linear-gradient(90deg,#1a56db,#3b7fe8)"></div>
+      <div class="ctitle">SCI Weighted Score <span>Current Month</span></div>
+      <div class="kval lg">76.4<span style="font-size:22px;color:var(--text3)">%</span></div>
+      <div class="ksub">Group composite index · Feb 2026</div>
+      <div class="kdelta kup">▲ +2.1pp vs Jan 2026</div>
+      <div class="spark">
+        <svg width="100%" height="32" viewBox="0 0 160 32" preserveAspectRatio="none">
+          <defs><linearGradient id="sg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#1a56db" stop-opacity="0.2"/><stop offset="100%" stop-color="#1a56db" stop-opacity="0"/></linearGradient></defs>
+          <polygon points="0,26 14,24 28,22 42,25 56,20 70,18 84,21 98,16 112,14 126,12 140,10 160,8 160,32 0,32" fill="url(#sg1)"/>
+          <polyline points="0,26 14,24 28,22 42,25 56,20 70,18 84,21 98,16 112,14 126,12 140,10 160,8" fill="none" stroke="#1a56db" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background:linear-gradient(90deg,#059669,#10b981)"></div>
+      <div class="ctitle">Markets Above Target <span>≥ 80%</span></div>
+      <div class="kval lg">9<span style="font-size:22px;color:var(--text3)">/16</span></div>
+      <div class="ksub">56% of all markets</div>
+      <div class="kdelta kup">▲ +1 vs Jan 2026</div>
+      <div class="dnut-wrap">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="24" fill="none" stroke="#e8eaed" stroke-width="10"/>
+          <circle cx="32" cy="32" r="24" fill="none" stroke="#10b981" stroke-width="10" stroke-dasharray="84.8 65.97" stroke-dashoffset="21.2" stroke-linecap="round" transform="rotate(-90 32 32)"/>
+        </svg>
+        <div class="dnut-leg">
+          <div class="leg-row"><div class="leg-dot" style="background:#10b981"></div>Above target: <strong>9</strong></div>
+          <div class="leg-row"><div class="leg-dot" style="background:#ef4444"></div>Below target: <strong>7</strong></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background:linear-gradient(90deg,#d97706,#f59e0b)"></div>
+      <div class="ctitle">Measures Achieving Target <span>vs total active</span></div>
+      <div class="kval lg">14<span style="font-size:22px;color:var(--text3)">/22</span></div>
+      <div class="ksub">63.6% of all measures</div>
+      <div class="kdelta kdown">▼ –1 vs Jan 2026</div>
+      <div class="mrow">
+        <div class="mitem"><div class="mv" style="color:var(--green-mid)">14</div><div class="ml">On Target</div></div>
+        <div class="mitem"><div class="mv" style="color:var(--red-mid)">8</div><div class="ml">Below</div></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-accent" style="background:linear-gradient(90deg,#7c3aed,#8b5cf6)"></div>
+      <div class="ctitle">SCI vs Prior Year <span>Feb 2025</span></div>
+      <div class="kval lg">+4.2<span style="font-size:22px;color:var(--text3)">pp</span></div>
+      <div class="ksub">YoY improvement · Feb 2025 was 72.2%</div>
+      <div class="kdelta kup">▲ Positive trajectory</div>
+      <div class="spark" style="margin-top:10px">
+        <svg width="100%" height="32" viewBox="0 0 160 32" preserveAspectRatio="none">
+          <polyline points="0,28 14,26 28,27 42,24 56,23 70,25 84,22 98,20 112,22 126,18 140,15 160,10" fill="none" stroke="#8b5cf6" stroke-width="1.5" stroke-dasharray="4,3" opacity="0.5" stroke-linecap="round"/>
+          <polyline points="0,26 14,24 28,22 42,25 56,20 70,18 84,21 98,16 112,14 126,12 140,10 160,8" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card sp2">
+      <div class="ctitle">SCI Weighted Score — Last 12 Months (Group)</div>
+      <svg class="csvg" height="185" viewBox="0 0 600 185">
+        <defs>
+          <linearGradient id="lg1" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1a56db" stop-opacity="0.15"/>
+            <stop offset="100%" stop-color="#1a56db" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="fs1"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.1"/></filter>
+        </defs>
+        <line x1="50" y1="20" x2="50" y2="158" stroke="#dde1e8" stroke-width="1"/>
+        <line x1="50" y1="158" x2="590" y2="158" stroke="#dde1e8" stroke-width="1"/>
+        <line x1="50" y1="112" x2="590" y2="112" stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="50" y1="78"  x2="590" y2="78"  stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="50" y1="44"  x2="590" y2="44"  stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="50" y1="86"  x2="590" y2="86"  stroke="#d97706" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.5"/>
+        <text x="594" y="90" fill="#d97706" font-size="9" font-family="DM Mono">80%</text>
+        <polygon points="50,122 96,117 142,120 188,112 234,107 280,110 326,102 372,97 418,100 464,90 510,84 556,80 556,158 50,158" fill="url(#lg1)"/>
+        <polyline points="50,122 96,117 142,120 188,112 234,107 280,110 326,102 372,97 418,100 464,90 510,84 556,80" fill="none" stroke="#1a56db" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="556" cy="80" r="5" fill="#1a56db" stroke="white" stroke-width="2"/>
+        <text x="42" y="162" text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">60%</text>
+        <text x="42" y="116" text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">70%</text>
+        <text x="42" y="82"  text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">80%</text>
+        <text x="42" y="48"  text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">90%</text>
+        <text x="50"  y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Mar</text>
+        <text x="96"  y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Apr</text>
+        <text x="142" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">May</text>
+        <text x="188" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jun</text>
+        <text x="234" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jul</text>
+        <text x="280" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Aug</text>
+        <text x="326" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Sep</text>
+        <text x="372" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Oct</text>
+        <text x="418" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Nov</text>
+        <text x="464" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Dec</text>
+        <text x="510" y="175" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jan</text>
+        <text x="556" y="175" text-anchor="middle" fill="#1a56db" font-size="9" font-family="DM Sans" font-weight="600">Feb</text>
+        <rect x="520" y="56" width="78" height="46" rx="5" fill="white" stroke="#dde1e8" stroke-width="1" filter="url(#fs1)"/>
+        <text x="559" y="71"  text-anchor="middle" fill="#1a56db" font-size="9"  font-family="DM Sans" font-weight="600">Feb 2026</text>
+        <text x="559" y="86"  text-anchor="middle" fill="#1a2332" font-size="13" font-family="Playfair Display" font-weight="700">76.4%</text>
+        <text x="559" y="97"  text-anchor="middle" fill="#059669" font-size="9"  font-family="DM Mono">+2.1pp</text>
+      </svg>
+    </div>
+    <div class="card">
+      <div class="ctitle">Top &amp; Bottom Markets</div>
+      <div class="barchart">
+        <div class="brow"><div class="blabel">🇩🇪 Germany</div><div class="btrack"><div class="bfill g" style="width:92%"></div><div class="tline" style="left:80%"></div></div><div class="bval">92.1%</div></div>
+        <div class="brow"><div class="blabel">🇳🇱 Netherlands</div><div class="btrack"><div class="bfill g" style="width:89%"></div><div class="tline" style="left:80%"></div></div><div class="bval">89.4%</div></div>
+        <div class="brow"><div class="blabel">🇸🇪 Sweden</div><div class="btrack"><div class="bfill g" style="width:86%"></div><div class="tline" style="left:80%"></div></div><div class="bval">86.2%</div></div>
+        <div class="brow"><div class="blabel">🇦🇪 UAE</div><div class="btrack"><div class="bfill g" style="width:84%"></div><div class="tline" style="left:80%"></div></div><div class="bval">84.0%</div></div>
+        <div class="brow"><div class="blabel">🇫🇷 France</div><div class="btrack"><div class="bfill g" style="width:81%"></div><div class="tline" style="left:80%"></div></div><div class="bval">81.3%</div></div>
+      </div>
+      <div style="border-top:1px solid var(--border);margin:12px 0 10px"></div>
+      <div class="barchart">
+        <div class="brow"><div class="blabel">🇬🇧 UK</div><div class="btrack"><div class="bfill a" style="width:74%"></div><div class="tline" style="left:80%"></div></div><div class="bval" style="color:var(--amber)">74.4%</div></div>
+        <div class="brow"><div class="blabel">🇧🇪 Belgium</div><div class="btrack"><div class="bfill r" style="width:71%"></div><div class="tline" style="left:80%"></div></div><div class="bval" style="color:var(--red)">71.2%</div></div>
+        <div class="brow"><div class="blabel">🇨🇿 Czech Rep.</div><div class="btrack"><div class="bfill r" style="width:68%"></div><div class="tline" style="left:80%"></div></div><div class="bval" style="color:var(--red)">68.1%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid g3">
+    <div class="card sp2">
+      <div class="ctitle">YTD Average by Market vs 80% Target</div>
+      <div style="display:flex;align-items:flex-end;gap:6px;height:130px;padding:0 4px">
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+          <div style="width:100%;background:linear-gradient(180deg,#2563eb,#1d4ed8);border-radius:4px 4px 0 0;height:72%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#dbeafe;font-weight:600">76.4%</div>
+          <div style="font-size:9.5px;color:var(--text3);margin-top:4px;text-align:center">Group</div>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#059669,#047857);border-radius:4px 4px 0 0;height:87%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#d1fae5;font-weight:600">92.1%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">DE</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#059669,#047857);border-radius:4px 4px 0 0;height:84%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#d1fae5;font-weight:600">89.4%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">NL</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#059669,#047857);border-radius:4px 4px 0 0;height:81%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#d1fae5;font-weight:600">86.2%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">SE</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#059669,#047857);border-radius:4px 4px 0 0;height:79%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#d1fae5;font-weight:600">84.0%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">AE</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#059669,#047857);border-radius:4px 4px 0 0;height:76%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#d1fae5;font-weight:600">81.3%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">FR</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#d97706,#b45309);border-radius:4px 4px 0 0;height:70%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#fef3c7;font-weight:600">74.4%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">UK</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#d97706,#b45309);border-radius:4px 4px 0 0;height:67%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#fef3c7;font-weight:600">71.2%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">BE</div></div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center"><div style="width:100%;background:linear-gradient(180deg,#dc2626,#b91c1c);border-radius:4px 4px 0 0;height:64%;display:flex;align-items:flex-start;justify-content:center;padding-top:3px;font-size:9px;font-family:var(--mono);color:#fee2e2;font-weight:600">68.1%</div><div style="font-size:9.5px;color:var(--text3);margin-top:4px">CZ</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="ctitle">Group Quick Stats</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div class="statbox" style="background:var(--blue-soft)"><div class="stitle" style="color:var(--blue)">YTD Average</div><div class="sval" style="color:var(--blue)">76.4%</div><div class="ssub">vs 72.2% prior year (+4.2pp)</div></div>
+        <div class="statbox" style="background:var(--green-soft)"><div class="stitle" style="color:var(--green)">Best MoM Gain</div><div class="sval" style="color:var(--green)">UAE +3.0pp</div><div class="ssub">Highest single-month improvement</div></div>
+        <div class="statbox" style="background:var(--red-soft)"><div class="stitle" style="color:var(--red)">Biggest Decline</div><div class="sval" style="color:var(--red)">CZ –2.3pp</div><div class="ssub">Czech Republic MoM drop</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ P2: MARKET COMPARISON ══ -->
+<div class="page" id="page-1">
+  <div class="pnote"><span>🌍</span><div><strong>P2 — Market Comparison</strong> &nbsp;All markets ranked by SCI score. MoM and YoY deltas. Measure filter narrows scores to selected measures only. Click a row to drill to Market/Site Report.</div></div>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card sp2">
+      <div class="ctitle">All Markets — SCI Weighted Score Ranked (Feb 2026)</div>
+      <div style="overflow-x:auto">
+        <table class="mktable">
+          <thead><tr><th>#</th><th>Market</th><th>Zone</th><th>SCI Score</th><th>Target</th><th>vs Target</th><th>MoM</th><th>YoY</th><th>Status</th><th>Trend</th></tr></thead>
+          <tbody>
+            <tr><td class="rnum">1</td><td style="font-weight:600">🇩🇪 Germany</td><td style="font-size:11px;color:var(--text3)">DACH</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">92.1%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+12.1pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+1.2pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+5.4pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--green)">↗</td></tr>
+            <tr><td class="rnum">2</td><td style="font-weight:600">🇳🇱 Netherlands</td><td style="font-size:11px;color:var(--text3)">Benelux</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">89.4%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+9.4pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+0.8pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+3.8pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--green)">↗</td></tr>
+            <tr><td class="rnum">3</td><td style="font-weight:600">🇸🇪 Sweden</td><td style="font-size:11px;color:var(--text3)">Nordic</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">86.2%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+6.2pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+2.1pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+6.1pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--green)">↑</td></tr>
+            <tr><td class="rnum">4</td><td style="font-weight:600">🇦🇪 UAE</td><td style="font-size:11px;color:var(--text3)">MEA</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">84.0%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+4.0pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+3.0pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+8.2pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--green)">↑</td></tr>
+            <tr><td class="rnum">5</td><td style="font-weight:600">🇫🇷 France</td><td style="font-size:11px;color:var(--text3)">WEuro</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">81.3%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+1.3pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–0.5pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+2.0pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--amber)">→</td></tr>
+            <tr><td class="rnum">6</td><td style="font-weight:600">🇵🇱 Poland</td><td style="font-size:11px;color:var(--text3)">CEE</td><td style="font-family:var(--mono);font-weight:600;color:var(--green)">80.8%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+0.8pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+1.5pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+4.1pp</td><td><span class="sdot g"></span>On Target</td><td style="color:var(--green)">↗</td></tr>
+            <tr><td class="rnum">7</td><td style="font-weight:600">🇪🇸 Spain</td><td style="font-size:11px;color:var(--text3)">WEuro</td><td style="font-family:var(--mono);font-weight:600;color:var(--amber)">79.5%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill a">–0.5pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">+0.2pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+1.8pp</td><td><span class="sdot a"></span>At Risk</td><td style="color:var(--amber)">→</td></tr>
+            <tr><td class="rnum">8</td><td style="font-weight:600">🇮🇹 Italy</td><td style="font-size:11px;color:var(--text3)">WEuro</td><td style="font-family:var(--mono);font-weight:600;color:var(--amber)">78.3%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill a">–1.7pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–0.3pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">+0.9pp</td><td><span class="sdot a"></span>At Risk</td><td style="color:var(--red)">↘</td></tr>
+            <tr><td class="rnum">9</td><td style="font-weight:600">🇬🇧 UK</td><td style="font-size:11px;color:var(--text3)">UKI</td><td style="font-family:var(--mono);font-weight:600;color:var(--amber)">74.4%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill a">–5.6pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–0.9pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--text3)">–0.2pp</td><td><span class="sdot a"></span>At Risk</td><td style="color:var(--red)">↓</td></tr>
+            <tr><td class="rnum">10</td><td style="font-weight:600">🇧🇪 Belgium</td><td style="font-size:11px;color:var(--text3)">Benelux</td><td style="font-family:var(--mono);font-weight:600;color:var(--red)">71.2%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill r">–8.8pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–1.1pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–1.4pp</td><td><span class="sdot r"></span>Critical</td><td style="color:var(--red)">↓</td></tr>
+            <tr><td class="rnum">11</td><td style="font-weight:600">🇨🇿 Czech Rep.</td><td style="font-size:11px;color:var(--text3)">CEE</td><td style="font-family:var(--mono);font-weight:600;color:var(--red)">68.1%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill r">–11.9pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–2.3pp</td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">–3.1pp</td><td><span class="sdot r"></span>Critical</td><td style="color:var(--red)">↓</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="ctitle">Markets by Zone</div>
+        <div class="barchart">
+          <div class="brow"><div class="blabel">DACH</div><div class="btrack"><div class="bfill g" style="width:92%"></div></div><div class="bval">92.1%</div></div>
+          <div class="brow"><div class="blabel">Nordic</div><div class="btrack"><div class="bfill g" style="width:86%"></div></div><div class="bval">86.2%</div></div>
+          <div class="brow"><div class="blabel">MEA</div><div class="btrack"><div class="bfill g" style="width:84%"></div></div><div class="bval">84.0%</div></div>
+          <div class="brow"><div class="blabel">Benelux</div><div class="btrack"><div class="bfill a" style="width:80%"></div></div><div class="bval">80.3%</div></div>
+          <div class="brow"><div class="blabel">WEuro</div><div class="btrack"><div class="bfill a" style="width:79%"></div></div><div class="bval">79.7%</div></div>
+          <div class="brow"><div class="blabel">UKI</div><div class="btrack"><div class="bfill a" style="width:74%"></div></div><div class="bval" style="color:var(--amber)">74.4%</div></div>
+          <div class="brow"><div class="blabel">CEE</div><div class="btrack"><div class="bfill r" style="width:74%"></div></div><div class="bval" style="color:var(--red)">74.4%</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Status Distribution</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--green)">On Target (≥80%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--green)">6</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:55%;background:var(--green-mid);border-radius:4px"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--amber)">At Risk (75–79%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--amber)">3</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:27%;background:var(--amber-mid);border-radius:4px"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--red)">Critical (&lt;75%)</span><span style="font-family:var(--mono);font-size:13px;font-weight:700;color:var(--red)">2</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:18%;background:var(--red-mid);border-radius:4px"></div></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ann"><span>💡</span><span><strong>Design note:</strong> Measure filter narrows SCI scores displayed to the selected measure subset. The Zone and Accountability filters also apply here, reducing the visible rows.</span></div>
+</div>
+
+<!-- ══ P3: HEATMAP ══ -->
+<div class="page" id="page-2">
+  <div class="pnote"><span>🟩</span><div><strong>P3 — Measure Heatmap</strong> &nbsp;Each row = a measure; each column = a market. Colour = compliance vs target. Measure filter pre-selects rows shown. Click any cell to drill to Market/Site Report filtered to that measure + market.</div></div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="ctitle">Measure × Market Compliance — Feb 2026 <span>Measure filter active · showing selected measures</span></div>
+    <div class="hmwrap">
+      <table class="hm">
+        <thead><tr><th class="mc">Measure</th><th>Stream</th><th>DE</th><th>NL</th><th>SE</th><th>FR</th><th>PL</th><th>UK</th><th>BE</th><th>CZ</th><th>AE</th><th>ES</th></tr></thead>
+        <tbody>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M01</span> Access Control</td><td style="font-size:10px;color:var(--text4)">IT Sec</td><td><div class="hmc g4">95%</div></td><td><div class="hmc g3">92%</div></td><td><div class="hmc g2">89%</div></td><td><div class="hmc g1">85%</div></td><td><div class="hmc g2">88%</div></td><td><div class="hmc a1">77%</div></td><td><div class="hmc a2">74%</div></td><td><div class="hmc r1">68%</div></td><td><div class="hmc g1">86%</div></td><td><div class="hmc g1">83%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M02</span> Patch Management</td><td style="font-size:10px;color:var(--text4)">IT Ops</td><td><div class="hmc g3">91%</div></td><td><div class="hmc g2">88%</div></td><td><div class="hmc g1">85%</div></td><td><div class="hmc a1">76%</div></td><td><div class="hmc a1">73%</div></td><td><div class="hmc r2">62%</div></td><td><div class="hmc r1">65%</div></td><td><div class="hmc r2">58%</div></td><td><div class="hmc g2">88%</div></td><td><div class="hmc a1">78%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M03</span> Vulnerability Scan</td><td style="font-size:10px;color:var(--text4)">IT Ops</td><td><div class="hmc g4">94%</div></td><td><div class="hmc g3">91%</div></td><td><div class="hmc g4">93%</div></td><td><div class="hmc g2">87%</div></td><td><div class="hmc g1">84%</div></td><td><div class="hmc g1">82%</div></td><td><div class="hmc g1">80%</div></td><td><div class="hmc a1">76%</div></td><td><div class="hmc g3">90%</div></td><td><div class="hmc g2">86%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M04</span> Endpoint Protection</td><td style="font-size:10px;color:var(--text4)">IT Sec</td><td><div class="hmc g2">88%</div></td><td><div class="hmc g1">84%</div></td><td><div class="hmc g1">81%</div></td><td><div class="hmc a2">75%</div></td><td><div class="hmc a1">78%</div></td><td><div class="hmc r1">69%</div></td><td><div class="hmc r1">66%</div></td><td><div class="hmc r2">61%</div></td><td><div class="hmc g1">85%</div></td><td><div class="hmc a1">77%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M05</span> MFA Adoption</td><td style="font-size:10px;color:var(--text4)">IT Sec</td><td><div class="hmc g4">96%</div></td><td><div class="hmc g4">95%</div></td><td><div class="hmc g3">92%</div></td><td><div class="hmc g2">89%</div></td><td><div class="hmc g3">91%</div></td><td><div class="hmc g1">83%</div></td><td><div class="hmc g1">80%</div></td><td><div class="hmc a1">74%</div></td><td><div class="hmc g4">94%</div></td><td><div class="hmc g2">87%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M06</span> Security Training</td><td style="font-size:10px;color:var(--text4)">HR/IT</td><td><div class="hmc g2">87%</div></td><td><div class="hmc a1">78%</div></td><td><div class="hmc a1">75%</div></td><td><div class="hmc r1">66%</div></td><td><div class="hmc a2">72%</div></td><td><div class="hmc r2">58%</div></td><td><div class="hmc r2">55%</div></td><td><div class="hmc r2">52%</div></td><td><div class="hmc g1">82%</div></td><td><div class="hmc r1">64%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M07</span> Incident Response</td><td style="font-size:10px;color:var(--text4)">IT Sec</td><td><div class="hmc g4">95%</div></td><td><div class="hmc g3">91%</div></td><td><div class="hmc g3">90%</div></td><td><div class="hmc g1">84%</div></td><td><div class="hmc g1">83%</div></td><td><div class="hmc g1">81%</div></td><td><div class="hmc g1">80%</div></td><td><div class="hmc a1">76%</div></td><td><div class="hmc g2">88%</div></td><td><div class="hmc g1">85%</div></td></tr>
+          <tr class="hmrow"><td class="hmeas"><span style="font-family:var(--mono);font-size:10px;color:var(--text4)">M08</span> Data Classification</td><td style="font-size:10px;color:var(--text4)">IT Sec</td><td><div class="hmc g1">82%</div></td><td><div class="hmc a1">74%</div></td><td><div class="hmc a2">72%</div></td><td><div class="hmc r2">61%</div></td><td><div class="hmc a1">76%</div></td><td><div class="hmc r1">55%</div></td><td><div class="hmc r2">51%</div></td><td><div class="hmc r2">48%</div></td><td><div class="hmc g1">80%</div></td><td><div class="hmc r1">60%</div></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap">
+      <span style="font-size:10.5px;color:var(--text4)">Legend:</span>
+      <div class="hmc g4" style="width:44px;height:20px;font-size:9px">≥95%</div>
+      <div class="hmc g2" style="width:44px;height:20px;font-size:9px">≥80%</div>
+      <div class="hmc a1" style="width:44px;height:20px;font-size:9px">70–79%</div>
+      <div class="hmc r1" style="width:44px;height:20px;font-size:9px">&lt;70%</div>
+      <span style="font-size:10.5px;color:var(--text4);margin-left:8px">↳ Click any cell to drill into Market/Site Report filtered to that measure + market</span>
+    </div>
+  </div>
+  <div class="ann"><span>💡</span><span><strong>Design note:</strong> Measure filter controls which rows are visible. Accountability filter reduces rows to measures owned by the selected stream. Both pass MeasureCode to DAX via KEEPFILTERS on v_KPIMeasure.</span></div>
+</div>
+
+<!-- ══ P4: 12M TREND ══ -->
+<div class="page" id="page-3">
+  <div class="pnote"><span>📈</span><div><strong>P4 — 12-Month Trend</strong> &nbsp;One line per market, last 12 months. When Measure filter is active, lines show weighted SCI for selected measures only. Reference lines: 80% target and group YTD average.</div></div>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card sp3">
+      <div class="ctitle">SCI Weighted Contribution % — All Markets, Last 12 Months
+        <span style="display:flex;gap:10px;align-items:center">
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:2px;background:#1a56db;display:inline-block"></span>80% Target</span>
+          <span style="display:flex;align-items:center;gap:4px"><span style="width:16px;height:2px;background:#d97706;display:inline-block"></span>Group YTD avg</span>
+        </span>
+      </div>
+      <svg class="csvg" height="240" viewBox="0 0 780 240">
+        <line x1="60" y1="10"  x2="60"  y2="210" stroke="#dde1e8" stroke-width="1"/>
+        <line x1="60" y1="210" x2="770" y2="210" stroke="#dde1e8" stroke-width="1"/>
+        <line x1="60" y1="160" x2="770" y2="160" stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="60" y1="110" x2="770" y2="110" stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="60" y1="60"  x2="770" y2="60"  stroke="#eef0f4" stroke-width="1" stroke-dasharray="4,4"/>
+        <line x1="60" y1="110" x2="770" y2="110" stroke="#1a56db" stroke-width="1.5" stroke-dasharray="6,3" opacity="0.4"/>
+        <line x1="60" y1="128" x2="770" y2="128" stroke="#d97706" stroke-width="1.5" stroke-dasharray="3,3" opacity="0.5"/>
+        <polyline points="60,95 122,90 184,87 246,85 308,82 370,80 432,76 494,72 556,69 618,65 680,62 742,58" fill="none" stroke="#059669" stroke-width="2.2" stroke-linecap="round"/>
+        <polyline points="60,115 122,113 184,110 246,106 308,104 370,102 432,100 494,96 556,94 618,91 680,88 742,85" fill="none" stroke="#1a56db" stroke-width="2.2" stroke-linecap="round"/>
+        <polyline points="60,126 122,128 184,131 246,126 308,124 370,121 432,116 494,114 556,111 618,108 680,104 742,100" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round"/>
+        <polyline points="60,140 122,136 184,138 246,140 308,136 370,134 432,138 494,141 556,143 618,147 680,150 742,155" fill="none" stroke="#d97706" stroke-width="1.8" stroke-linecap="round"/>
+        <polyline points="60,152 122,150 184,156 246,160 308,165 370,162 432,159 494,162 556,166 618,171 680,174 742,178" fill="none" stroke="#ef4444" stroke-width="1.8" stroke-linecap="round" stroke-dasharray="5,3"/>
+        <text x="52" y="214" text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">60%</text>
+        <text x="52" y="164" text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">70%</text>
+        <text x="52" y="114" text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">80%</text>
+        <text x="52" y="64"  text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">90%</text>
+        <text x="52" y="14"  text-anchor="end" fill="#9aa5b4" font-size="10" font-family="DM Mono">100%</text>
+        <text x="60"  y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Mar</text>
+        <text x="122" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Apr</text>
+        <text x="184" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">May</text>
+        <text x="246" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jun</text>
+        <text x="308" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jul</text>
+        <text x="370" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Aug</text>
+        <text x="432" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Sep</text>
+        <text x="494" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Oct</text>
+        <text x="556" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Nov</text>
+        <text x="618" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Dec</text>
+        <text x="680" y="226" text-anchor="middle" fill="#9aa5b4" font-size="9" font-family="DM Sans">Jan</text>
+        <text x="742" y="226" text-anchor="middle" fill="#1a56db" font-size="9" font-family="DM Sans" font-weight="600">Feb</text>
+        <text x="748" y="62"  fill="#059669" font-size="9" font-family="DM Sans" font-weight="600">DE 92%</text>
+        <text x="748" y="89"  fill="#1a56db" font-size="9" font-family="DM Sans" font-weight="600">NL 90%</text>
+        <text x="748" y="104" fill="#8b5cf6" font-size="9" font-family="DM Sans">SE 86%</text>
+        <text x="748" y="159" fill="#d97706" font-size="9" font-family="DM Sans">UK 74%</text>
+        <text x="748" y="182" fill="#ef4444" font-size="9" font-family="DM Sans">CZ 68%</text>
+      </svg>
+    </div>
+  </div>
+  <div class="grid g3">
+    <div class="card"><div class="ctitle">Improving MoM</div><div class="barchart">
+      <div class="brow"><div class="blabel">🇦🇪 UAE</div><div class="btrack"><div class="bfill g" style="width:60%"></div></div><div class="bval" style="color:var(--green)">+3.0pp</div></div>
+      <div class="brow"><div class="blabel">🇸🇪 Sweden</div><div class="btrack"><div class="bfill g" style="width:42%"></div></div><div class="bval" style="color:var(--green)">+2.1pp</div></div>
+      <div class="brow"><div class="blabel">🇵🇱 Poland</div><div class="btrack"><div class="bfill g" style="width:30%"></div></div><div class="bval" style="color:var(--green)">+1.5pp</div></div>
+      <div class="brow"><div class="blabel">🇩🇪 Germany</div><div class="btrack"><div class="bfill g" style="width:24%"></div></div><div class="bval" style="color:var(--green)">+1.2pp</div></div>
+    </div></div>
+    <div class="card"><div class="ctitle">Declining MoM</div><div class="barchart">
+      <div class="brow"><div class="blabel">🇨🇿 Czech Rep.</div><div class="btrack"><div class="bfill r" style="width:46%"></div></div><div class="bval" style="color:var(--red)">–2.3pp</div></div>
+      <div class="brow"><div class="blabel">🇧🇪 Belgium</div><div class="btrack"><div class="bfill r" style="width:22%"></div></div><div class="bval" style="color:var(--red)">–1.1pp</div></div>
+      <div class="brow"><div class="blabel">🇬🇧 UK</div><div class="btrack"><div class="bfill r" style="width:18%"></div></div><div class="bval" style="color:var(--red)">–0.9pp</div></div>
+      <div class="brow"><div class="blabel">🇫🇷 France</div><div class="btrack"><div class="bfill r" style="width:10%"></div></div><div class="bval" style="color:var(--red)">–0.5pp</div></div>
+    </div></div>
+    <div class="card"><div class="ctitle">YTD vs Prior Year</div><div class="barchart">
+      <div class="brow"><div class="blabel">Group Avg YTD</div><div class="btrack"><div class="bfill g" style="width:76%"></div></div><div class="bval">76.4%</div></div>
+      <div class="brow"><div class="blabel">Avg LY (Feb 25)</div><div class="btrack"><div class="bfill a" style="width:72%"></div></div><div class="bval" style="color:var(--amber)">72.2%</div></div>
+      <div class="brow"><div class="blabel">YoY improvement</div><div class="btrack"><div class="bfill g" style="width:44%"></div></div><div class="bval" style="color:var(--green)">+4.2pp</div></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- ══ P5: GAP ANALYSIS ══ -->
+<div class="page" id="page-4">
+  <div class="pnote"><span>🎯</span><div><strong>P5 — Gap Analysis</strong> &nbsp;All measures ranked by gap to target. Weighted by measure weight — shows biggest compliance deficits. Measure filter limits this view to selected measures.</div></div>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="card sp2">
+      <div class="ctitle">Measures — Ranked by SCI Gap% (Worst First) <span>Weight × non-compliance = SCI impact</span></div>
+      <table class="rtable">
+        <thead><tr><th>#</th><th>Measure</th><th>Accountability</th><th>Weight</th><th>Compliance%</th><th>Target</th><th>SCI Gap%</th><th>NC Change</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td class="rnum">1</td><td style="font-weight:600">M08 — Data Classification</td><td style="font-size:11px;color:var(--text3)">IT Security</td><td style="font-family:var(--mono);font-size:11px">12%</td><td style="font-family:var(--mono)">64.8%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill r">–15.2pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">▲ +23</td><td><span style="font-size:10px;background:var(--red-soft);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:600">Critical</span></td></tr>
+          <tr><td class="rnum">2</td><td style="font-weight:600">M06 — Security Training</td><td style="font-size:11px;color:var(--text3)">HR / IT</td><td style="font-family:var(--mono);font-size:11px">10%</td><td style="font-family:var(--mono)">67.3%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill r">–12.7pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--red)">▲ +18</td><td><span style="font-size:10px;background:var(--red-soft);color:var(--red);padding:2px 8px;border-radius:10px;font-weight:600">Critical</span></td></tr>
+          <tr><td class="rnum">3</td><td style="font-weight:600">M02 — Patch Management</td><td style="font-size:11px;color:var(--text3)">IT Ops</td><td style="font-family:var(--mono);font-size:11px">15%</td><td style="font-family:var(--mono)">74.1%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill a">–5.9pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--amber)">▲ +9</td><td><span style="font-size:10px;background:var(--amber-soft);color:var(--amber);padding:2px 8px;border-radius:10px;font-weight:600">At Risk</span></td></tr>
+          <tr><td class="rnum">4</td><td style="font-weight:600">M04 — Endpoint Protection</td><td style="font-size:11px;color:var(--text3)">IT Security</td><td style="font-family:var(--mono);font-size:11px">14%</td><td style="font-family:var(--mono)">78.2%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">90%</td><td><span class="gpill a">–11.8pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--amber)">▲ +12</td><td><span style="font-size:10px;background:var(--amber-soft);color:var(--amber);padding:2px 8px;border-radius:10px;font-weight:600">At Risk</span></td></tr>
+          <tr><td class="rnum">5</td><td style="font-weight:600">M01 — Access Control</td><td style="font-size:11px;color:var(--text3)">IT Security</td><td style="font-family:var(--mono);font-size:11px">13%</td><td style="font-family:var(--mono)">82.6%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">80%</td><td><span class="gpill g">+2.6pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">▼ –4</td><td><span style="font-size:10px;background:var(--green-soft);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">On Target</span></td></tr>
+          <tr><td class="rnum">6</td><td style="font-weight:600">M05 — MFA Adoption</td><td style="font-size:11px;color:var(--text3)">IT Security</td><td style="font-family:var(--mono);font-size:11px">11%</td><td style="font-family:var(--mono)">86.4%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">85%</td><td><span class="gpill g">+1.4pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">▼ –2</td><td><span style="font-size:10px;background:var(--green-soft);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">On Target</span></td></tr>
+          <tr><td class="rnum">7</td><td style="font-weight:600">M03 — Vulnerability Scan</td><td style="font-size:11px;color:var(--text3)">IT Ops</td><td style="font-family:var(--mono);font-size:11px">9%</td><td style="font-family:var(--mono)">87.2%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">75%</td><td><span class="gpill g">+12.2pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">▼ –6</td><td><span style="font-size:10px;background:var(--green-soft);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">On Target</span></td></tr>
+          <tr><td class="rnum">8</td><td style="font-weight:600">M07 — Incident Response</td><td style="font-size:11px;color:var(--text3)">IT Security</td><td style="font-family:var(--mono);font-size:11px">8%</td><td style="font-family:var(--mono)">83.1%</td><td style="font-family:var(--mono);font-size:11px;color:var(--text4)">70%</td><td><span class="gpill g">+13.1pp</span></td><td style="font-family:var(--mono);font-size:11px;color:var(--green)">▼ –1</td><td><span style="font-size:10px;background:var(--green-soft);color:var(--green);padding:2px 8px;border-radius:10px;font-weight:600">On Target</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div class="card">
+        <div class="ctitle">Status Summary</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--red)">Critical (2+ pp below)</span><span style="font-family:var(--mono);font-weight:700;color:var(--red)">2</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:25%;background:var(--red-mid);border-radius:4px"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--amber)">At Risk (0–2 pp below)</span><span style="font-family:var(--mono);font-weight:700;color:var(--amber)">2</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:25%;background:var(--amber-mid);border-radius:4px"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:12px;color:var(--green)">On Target</span><span style="font-family:var(--mono);font-weight:700;color:var(--green)">4</span></div><div style="height:7px;background:var(--surface3);border-radius:4px"><div style="height:100%;width:50%;background:var(--green-mid);border-radius:4px"></div></div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Gap Impact by Weight</div>
+        <div class="barchart">
+          <div class="brow"><div class="blabel">Data Classification</div><div class="btrack"><div class="bfill r" style="width:85%"></div></div><div class="bval" style="color:var(--red);font-size:10px">1.82pp</div></div>
+          <div class="brow"><div class="blabel">Security Training</div><div class="btrack"><div class="bfill r" style="width:70%"></div></div><div class="bval" style="color:var(--red);font-size:10px">1.27pp</div></div>
+          <div class="brow"><div class="blabel">Endpoint Protection</div><div class="btrack"><div class="bfill a" style="width:50%"></div></div><div class="bval" style="color:var(--amber);font-size:10px">1.65pp</div></div>
+          <div class="brow"><div class="blabel">Patch Management</div><div class="btrack"><div class="bfill a" style="width:40%"></div></div><div class="bval" style="color:var(--amber);font-size:10px">0.89pp</div></div>
+        </div>
+        <div style="margin-top:8px;font-size:10px;color:var(--text4)">Impact = Weight x Gap to Target</div>
+      </div>
+      <div class="card">
+        <div class="ctitle">Quick Stats</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div style="background:var(--red-soft);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--serif);font-size:26px;color:var(--red)">4</div><div style="font-size:10px;color:var(--text3)">Below target</div></div>
+          <div style="background:var(--amber-soft);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--serif);font-size:26px;color:var(--amber)">-3.6pp</div><div style="font-size:10px;color:var(--text3)">Weighted gap</div></div>
+          <div style="background:var(--green-soft);border-radius:8px;padding:10px;text-align:center"><div style="font-family:var(--serif);font-size:26px;color:var(--green)">+23</div><div style="font-size:10px;color:var(--text3)">Units improved</div></div>
+          <div style="background:var(--surface2);border-radius:8px;padding:10px;text-align:center;border:1px solid var(--border)"><div style="font-family:var(--serif);font-size:26px;color:var(--text)">52</div><div style="font-size:10px;color:var(--text3)">Still non-compliant</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ann"><span>💡</span><span><strong>Design note:</strong> Table sorted by SCI Gap% ascending (worst first). Measure filter reflects here — only selected measures appear. Click a row to drill into Heatmap (P3) filtered to that measure.</span></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// Page navigation
+function showPage(n) {
+  document.querySelectorAll('.page').forEach(function(p,i){ p.classList.toggle('active', i===n); });
+  document.querySelectorAll('.nav-tab').forEach(function(t,i){ t.classList.toggle('active', i===n); });
+  closeDrop();
+}
+
+// Measure data
+var MEASURES = [
+  {code:'M01',name:'Access Control',       stream:'IT Security',cls:'s-sec'},
+  {code:'M02',name:'Patch Management',      stream:'IT Ops',     cls:'s-ops'},
+  {code:'M03',name:'Vulnerability Scan',    stream:'IT Ops',     cls:'s-ops'},
+  {code:'M04',name:'Endpoint Protection',   stream:'IT Security',cls:'s-sec'},
+  {code:'M05',name:'MFA Adoption',          stream:'IT Security',cls:'s-sec'},
+  {code:'M06',name:'Security Training',     stream:'HR / IT',    cls:'s-hr'},
+  {code:'M07',name:'Incident Response',     stream:'IT Security',cls:'s-sec'},
+  {code:'M08',name:'Data Classification',   stream:'IT Security',cls:'s-sec'},
+  {code:'M09',name:'Data Retention',        stream:'IT Security',cls:'s-sec'},
+  {code:'M10',name:'Change Management',     stream:'IT Ops',     cls:'s-ops'},
+  {code:'M11',name:'Third Party Risk',      stream:'IT Security',cls:'s-sec'},
+  {code:'M12',name:'Backup and Recovery',   stream:'IT Ops',     cls:'s-ops'},
+  {code:'M13',name:'Privileged Access',     stream:'IT Security',cls:'s-sec'},
+  {code:'M14',name:'Network Segmentation',  stream:'IT Ops',     cls:'s-ops'},
+  {code:'M15',name:'Security Awareness',    stream:'HR / IT',    cls:'s-hr'},
+  {code:'M16',name:'Asset Inventory',       stream:'IT Ops',     cls:'s-ops'},
+  {code:'M17',name:'Logging and Monitoring',stream:'IT Ops',     cls:'s-ops'},
+  {code:'M18',name:'Encryption Standards',  stream:'IT Security',cls:'s-sec'},
+  {code:'M19',name:'Physical Security',     stream:'IT Ops',     cls:'s-ops'},
+  {code:'M20',name:'Identity Governance',   stream:'IT Security',cls:'s-sec'},
+  {code:'M21',name:'Supplier Assessment',   stream:'HR / IT',    cls:'s-hr'},
+  {code:'M22',name:'Cloud Security Posture',stream:'IT Security',cls:'s-sec'}
+];
+
+var selected = {};
+var pending  = {};
+MEASURES.forEach(function(m){ selected[m.code] = true; pending[m.code] = true; });
+
+function countObj(o){ return Object.keys(o).filter(function(k){ return o[k]; }).length; }
+
+function renderList(q) {
+  q = (q || '').toLowerCase();
+  var list = document.getElementById('mlist');
+  var html = '';
+  MEASURES.forEach(function(m) {
+    if (q && m.name.toLowerCase().indexOf(q)<0 && m.code.toLowerCase().indexOf(q)<0 && m.stream.toLowerCase().indexOf(q)<0) return;
+    html += '<label class="mitem">' +
+      '<input type="checkbox" value="' + m.code + '"' + (pending[m.code] ? ' checked' : '') + ' onchange="toggleM(this.value,this.checked)">' +
+      '<span class="mcode">' + m.code + '</span>' +
+      '<span class="mname">' + m.name + '</span>' +
+      '<span class="mstream ' + m.cls + '">' + m.stream + '</span>' +
+      '</label>';
+  });
+  list.innerHTML = html;
+  updateCount();
+}
+
+function toggleM(code, checked) {
+  pending[code] = checked;
+  updateCount();
+}
+
+function updateCount() {
+  var n = countObj(pending);
+  document.getElementById('mcnt').textContent = n === MEASURES.length ? 'All ' + MEASURES.length + ' selected' : n === 0 ? 'None selected' : n + ' of ' + MEASURES.length + ' selected';
+}
+
+function selAll() {
+  MEASURES.forEach(function(m){ pending[m.code] = true; });
+  renderList(document.getElementById('msrch').value);
+}
+
+function selNone() {
+  MEASURES.forEach(function(m){ pending[m.code] = false; });
+  renderList(document.getElementById('msrch').value);
+}
+
+function applyFilter() {
+  MEASURES.forEach(function(m){ selected[m.code] = pending[m.code]; });
+  var n = countObj(selected);
+  var chip = document.getElementById('mchip');
+  var lbl  = document.getElementById('mchip-lbl');
+  var stat = document.getElementById('fstatus');
+  if (n === MEASURES.length) {
+    lbl.textContent = 'All (22)';
+    chip.classList.remove('active-fc');
+    stat.textContent = 'All markets \u00b7 All measures';
+  } else if (n === 0) {
+    lbl.textContent = 'None';
+    chip.classList.add('active-fc');
+    stat.textContent = 'Warning: no measures selected';
+  } else {
+    lbl.textContent = n + ' selected';
+    chip.classList.add('active-fc');
+    var codes = Object.keys(selected).filter(function(k){ return selected[k]; }).sort().slice(0,3).join(', ');
+    if (n > 3) codes += ' +' + (n - 3) + ' more';
+    stat.textContent = n + ' measure' + (n>1?'s':'') + ' selected: ' + codes;
+  }
+  closeDrop();
+}
+
+function toggleDrop(e) {
+  e.stopPropagation();
+  var dd = document.getElementById('mdrop');
+  var chip = document.getElementById('mchip');
+  if (dd.classList.contains('open')) {
+    closeDrop();
+  } else {
+    MEASURES.forEach(function(m){ pending[m.code] = selected[m.code]; });
+    dd.classList.add('open');
+    chip.classList.add('open');
+    document.getElementById('msrch').value = '';
+    renderList('');
+    setTimeout(function(){ document.getElementById('msrch').focus(); }, 50);
+    document.addEventListener('click', outsideClick);
+  }
+}
+
+function outsideClick(e) {
+  var wrap = document.getElementById('mwrap');
+  if (!wrap.contains(e.target)) closeDrop();
+}
+
+function closeDrop() {
+  document.getElementById('mdrop').classList.remove('open');
+  document.getElementById('mchip').classList.remove('open');
+  document.removeEventListener('click', outsideClick);
+}
+
+// Animate bars on load
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.bfill').forEach(function(b) {
+    var w = b.style.width;
+    b.style.width = '0';
+    setTimeout(function(){ b.style.width = w; }, 80 + Math.random() * 220);
+  });
+  renderList('');
+});
+</script>
+</body>
+</html>
